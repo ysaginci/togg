@@ -51,15 +51,7 @@
 <div><label>Verim (η)</label><input type="text" id="eff" value="0.90" inputmode="decimal"></div>
 </div>
 </details>
-<div id="customizer">
-<h3>🔧 Özelleştirici</h3>
-<label>Başlık Metni:</label><input type="text" id="customTitle" value="EV Şarj Akım Hesaplayıcı">
-<label>Başlık Rengi:</label><input type="color" id="titleColor" value="#FF5722">
-<label>Arkaplan Rengi:</label><input type="color" id="bgColor" value="#FFF3E0">
-<label>Buton Rengi:</label><input type="color" id="btnColor" value="#FF5722">
-<label>Uygulama İkonu URL:</label><input type="text" id="iconURL" value="icons/icon-192.png">
-<button id="applyCustomize">Uygula</button>
-</div>
+
 <script>
 function toNum(v){ if(typeof v!=="string") return NaN; v=v.trim().replace(",","."); return v===""?NaN:Number(v); }
 function calculateHours(start,end){ const [sh,sm]=start.split(":").map(Number); const [eh,em]=end.split(":").map(Number); let startM=sh*60+sm, endM=eh*60+em; if(endM<=startM) endM+=24*60; return (endM-startM)/60; }

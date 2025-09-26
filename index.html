@@ -1,91 +1,202 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>EV Şarj Hesaplayıcı</title>
+
+  <!-- Ana ekrana eklenince uygulama gibi görünmesi için -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Şarj Hesaplayıcı">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" id="themeColor" content="#FF5722">
-  <link id="appIcon" rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#FF5722"> <!-- Tema rengi -->
+
+  <!-- Örnek ikon -->
+  <link rel="apple-touch-icon" href="https://i.imgur.com/Q9qFt3m.png">
+
   <style>
-    body { font-family: Arial; max-width: 560px; margin: auto; padding: 20px; background: #FFF3E0; }
-    h2 { text-align:center; color:#FF5722; margin-bottom:16px; }
-    label{font-weight:bold; display:block; margin-top:12px;}
-    input, select, button{width:100%; padding:10px; margin-top:6px; border:1px solid #ccc; border-radius:12px; box-sizing:border-box;}
-    button{background:#FF5722; color:#fff; border:none; font-size:16px; cursor:pointer;}
-    button:hover{background:#E64A19;}
-    #result{margin-top:16px; padding:16px; background:#fff; border:1px solid #ddd; border-radius:12px; font-size:16px; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
-    .row{display:flex; gap:10px;}
-    .row>div{flex:1;}
-    .hint{color:#444; font-size:12px;}
-    details{margin-top:14px;}
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 560px;
+      margin: auto;
+      padding: 20px;
+      background: #FFF3E0; /* Açık turuncu arkaplan */
+    }
+    h2 {
+      text-align: center;
+      color: #FF5722; /* Başlık rengi */
+      margin-bottom: 16px;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 12px;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      box-sizing: border-box;
+    }
+    button {
+      background: #FF5722;
+      color: #fff;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #E64A19;
+    }
+    #result {
+      margin-top: 16px;
+      padding: 16px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      font-size: 16px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .hint {
+      color: #444;
+      font-size: 12px;
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+    }
+    .row > div {
+      flex: 1;
+    }
+    details {
+      margin-top: 14px;
+    }
+    code {
+      background: #eef;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
   </style>
 </head>
 <body>
-<h2 id="appTitle">EV Şarj Akım Hesaplayıcı</h2>
-<label>Batarya Kapasitesi (kWh)</label>
-<input type="text" id="capacity" value="88.5" inputmode="decimal" placeholder="örn: 88.5">
-<div class="row">
-<div><label>Başlangıç (%)</label><input type="text" id="start" value="20" inputmode="decimal"></div>
-<div><label>Hedef (%)</label><input type="text" id="target" value="85" inputmode="decimal"></div>
-</div>
-<div class="row">
-<div><label>Başlama Saati (24h)</label><input type="time" id="startTime" value="18:00"></div>
-<div><label>Bitiş Saati (24h)</label><input type="time" id="endTime" value="08:00"></div>
-</div>
-<div class="row">
-<div><label>Faz Seçimi</label>
-<select id="phase"><option value="1">Tek faz</option><option value="3" selected>3 faz (380 V)</option></select>
-</div>
-</div>
-<button id="calc">HESAPLA</button>
-<div id="result">Sonuç burada görünecek.</div>
-<details>
-<summary>Gelişmiş</summary>
-<div class="row">
-<div><label>Güç Faktörü (PF)</label><input type="text" id="pf" value="0.99" inputmode="decimal"></div>
-<div><label>Verim (η)</label><input type="text" id="eff" value="0.90" inputmode="decimal"></div>
-</div>
-</details>
+  <h2>EV Şarj Akım Hesaplayıcı</h2>
 
-<script>
-function toNum(v){ if(typeof v!=="string") return NaN; v=v.trim().replace(",","."); return v===""?NaN:Number(v); }
-function calculateHours(start,end){ const [sh,sm]=start.split(":").map(Number); const [eh,em]=end.split(":").map(Number); let startM=sh*60+sm, endM=eh*60+em; if(endM<=startM) endM+=24*60; return (endM-startM)/60; }
-document.getElementById("calc").addEventListener("click", ()=>{
-const cap=toNum(document.getElementById("capacity").value);
-const s=toNum(document.getElementById("start").value);
-const t=toNum(document.getElementById("target").value);
-const startTime=document.getElementById("startTime").value;
-const endTime=document.getElementById("endTime").value;
-const phases=Number(document.getElementById("phase").value);
-const det=document.querySelector("details");
-const pf=det&&det.open?toNum(document.getElementById("pf").value):1;
-const eta=det&&det.open?toNum(document.getElementById("eff").value):1;
-const result=document.getElementById("result");
-if([cap,s,t].some(isNaN)||!startTime||!endTime||isNaN(phases)||isNaN(pf)||isNaN(eta)){result.innerHTML="⚠️ Lütfen tüm alanları doldurun."; return;}
-if(t<=s){ result.innerHTML="⚠️ Hedef yüzde başlangıçtan büyük olmalı."; return;}
-if(pf<=0||pf>1||eta<=0||eta>1){ result.innerHTML="⚠️ PF ve Verim 0–1 aralığında olmalı."; return;}
-const hrs=calculateHours(startTime,endTime);
-const E_Wh=cap*1000*(t-s)/100;
-const V=phases===3?380:230;
-const Pgrid_W=(E_Wh/hrs)/eta;
-const Iavg=phases===3?Pgrid_W/(Math.sqrt(3)*V*pf):Pgrid_W/(V*pf);
-result.innerHTML=`<b>Ortalama Akım (A):</b> ${Iavg.toFixed(2)} A<br>`+`<b>Ortalama Güç:</b> ${(Pgrid_W/1000).toFixed(2)} kW<br>`+`<b>Aktarılacak Enerji:</b> ${(E_Wh/1000).toFixed(2)} kWh<br>`+`<b>Şarj Süresi:</b> ${hrs.toFixed(2)} saat<br>`+`<small>Not: Bu değer <b>ortalama</b>dır.</small>`;
-});
-document.getElementById("applyCustomize").addEventListener("click", ()=>{
-document.getElementById("appTitle").innerText=document.getElementById("customTitle").value;
-document.getElementById("appTitle").style.color=document.getElementById("titleColor").value;
-document.body.style.background=document.getElementById("bgColor").value;
-document.querySelector("button#calc").style.background=document.getElementById("btnColor").value;
-document.getElementById("themeColor").setAttribute("content",document.getElementById("btnColor").value);
-document.getElementById("appIcon").setAttribute("href",document.getElementById("iconURL").value);
-alert("Değişiklikler uygulandı! Ana ekrana eklediğinizde güncellenmiş ikon ve renkler görünecek.");
-});
-if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js');}
-</script>
+  <p class="hint">Belirlediğiniz sürede bataryaya aktarılacak enerji için <b>ortalama akımı (A)</b> hesaplar.</p>
+
+  <label>Batarya Kapasitesi (kWh)</label>
+  <input type="text" id="capacity" value="88.5" inputmode="decimal" placeholder="örn: 88.5">
+
+  <div class="row">
+    <div>
+      <label>Başlangıç (%)</label>
+      <input type="text" id="start" value="20" inputmode="decimal" placeholder="örn: 20">
+    </div>
+    <div>
+      <label>Hedef (%)</label>
+      <input type="text" id="target" value="85" inputmode="decimal" placeholder="örn: 85">
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label>Başlama Saati<br> (24h, örn: 18:00)</label>
+      <input type="time" id="startTime" value="18:00">
+    </div>
+    <div>
+      <label>Bitiş Saati<br> (24h, örn: 08:00)</label>
+      <input type="time" id="endTime" value="08:00">
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label>Faz Seçimi</label>
+      <select id="phase">
+        <option value="1">Tek faz</option>
+        <option value="3" selected>3 faz (380 V)</option>
+      </select>
+    </div>
+  </div>
+
+  <button id="calc">HESAPLA</button>
+
+  <div id="result">Sonuç burada görünecek.</div>
+
+  <details>
+    <summary>Gelişmiş (isteğe bağlı)</summary>
+    <p class="hint">
+      İsteğe bağlı olarak <b>Güç Faktörü (PF)</b> ve <b>Verim (η)</b> girerek daha gerçekçi hesap yapabilirsiniz.
+    </p>
+    <div class="row">
+      <div>
+        <label>Güç Faktörü (PF)</label>
+        <input type="text" id="pf" value="0.99" inputmode="decimal">
+      </div>
+      <div>
+        <label>Verim (η)</label>
+        <input type="text" id="eff" value="0.90" inputmode="decimal">
+      </div>
+    </div>
+    <p class="hint">
+      <b>PF:</b> AC’de gerilim-akım faz kaybı (~0.95–1.0)<br>
+      <b>Verim:</b> Şarj cihazı kaybı (~0.9 demek %10 kayıp)
+    </p>
+  </details>
+
+  <script>
+    function toNum(v) {
+      if (typeof v !== "string") return NaN;
+      v = v.trim().replace(",", ".");
+      if (v === "") return NaN;
+      return Number(v);
+    }
+
+    function calculateHours(start, end) {
+      const [sh, sm] = start.split(":").map(Number);
+      const [eh, em] = end.split(":").map(Number);
+      let startMinutes = sh*60 + sm;
+      let endMinutes = eh*60 + em;
+      if(endMinutes <= startMinutes) endMinutes += 24*60; // gün değişimi
+      return (endMinutes - startMinutes)/60;
+    }
+
+    document.getElementById("calc").addEventListener("click", () => {
+      const cap = toNum(document.getElementById("capacity").value);
+      const s = toNum(document.getElementById("start").value);
+      const t = toNum(document.getElementById("target").value);
+      const startTime = document.getElementById("startTime").value;
+      const endTime = document.getElementById("endTime").value;
+      const phases = Number(document.getElementById("phase").value);
+
+      const det = document.querySelector("details");
+      const pf = det && det.open ? toNum(document.getElementById("pf").value) : 1;
+      const eta = det && det.open ? toNum(document.getElementById("eff").value) : 1;
+
+      const result = document.getElementById("result");
+
+      if ([cap,s,t].some(isNaN) || !startTime || !endTime || isNaN(phases) || isNaN(pf) || isNaN(eta)) {
+        result.innerHTML = "⚠️ Lütfen tüm alanları doğru şekilde doldurun.";
+        return;
+      }
+      if (t <= s) { result.innerHTML = "⚠️ Hedef yüzde başlangıçtan büyük olmalı."; return; }
+      if (pf <= 0 || pf > 1 || eta <= 0 || eta > 1){ result.innerHTML = "⚠️ PF ve Verim 0–1 aralığında olmalı."; return; }
+
+      const hrs = calculateHours(startTime, endTime);
+      const E_Wh = cap * 1000 * (t - s) / 100;
+      const V = phases === 3 ? 380 : 230;
+      const Pgrid_W = (E_Wh / hrs) / eta;
+      const Iavg = phases === 3 ? Pgrid_W / (Math.sqrt(3) * V * pf) : Pgrid_W / (V * pf);
+
+      result.innerHTML =
+        `<b>Ortalama Akım (A):</b> ${Iavg.toFixed(2)} A<br>` +
+        `<b>Ortalama Güç:</b> ${(Pgrid_W/1000).toFixed(2)} kW<br>` +
+        `<b>Aktarılacak Enerji:</b> ${(E_Wh/1000).toFixed(2)} kWh<br>` +
+        `<b>Şarj Süresi:</b> ${hrs.toFixed(2)} saat<br>` +
+        `<small>Not: Bu değer <b>ortalama</b>dır; araç şarj eğrisine göre anlık akım değişebilir.</small>`;
+    });
+  </script>
 </body>
 </html>
